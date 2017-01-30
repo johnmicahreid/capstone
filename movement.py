@@ -1,113 +1,89 @@
-import RPi.GPIO as io
+import RPi.GPIO as GPIO
 import time
 
-io.setmode(io.BCM)
 
-# Define the global speed
-global_speed = 0
+class Motors(object):
 
-# Setup motor 1
-motor1_in1_pin = 27
-motor1_in2_pin = 22
+  def __init__(self, motor1_in1_pin=27, motor1_in2_pin=22, motorpwm1_in1_pin = 4, 
+  	motor2_in1_pin = 24, motor2_in2_pin = 25, motorpwm2_in1_pin = 18, power_range = 100):
 
-io.setup(motor1_in1_pin, io.OUT)
-io.setup(motor1_in2_pin, io.OUT)
+    GPIO.setmode(GPIO.BCM)
 
-# setup pulse-width modulation for motor 1
-motorpwm1_in1_pin = 4
-io.setup(motorpwm1_in1_pin, io.OUT)
-motorpwm1 = io.PWM(4,100)
+	# Define the global speed
+	self.speed = 0
 
-# Initial output for motor 1
-io.output(motor1_in1_pin, True)
-io.output(motor1_in2_pin, False)
-motorpwm1.start(0)
+	# Setup motor 1
+	self.motor1_in1_pin = motor1_in1_pin
+	self.motor1_in2_pin = motor1_in2_pin
 
-# Setup motor 2 
-motor2_in1_pin = 24
-motor2_in2_pin = 25
+	GPIO.setup(self.motor1_in1_pin, GPIO.OUT)
+	GPIO.setup(self.motor1_in2_pin, GPIO.OUT)
 
-io.setup(motor2_in1_pin, io.OUT)
-io.setup(motor2_in2_pin, io.OUT)
+	# setup pulse-width modulation for motor 1
+	self.motorpwm1_in1_pin = motorpwm1_in1_pin
+	GPIO.setup(self.motorpwm1_in1_pin, GPIO.OUT)
+	self.motorpwm1 = GPIO.PWM(self.motorpwm1_in1_pin, power_range)
 
-motorpwm2_in1_pin = 18
-io.setup(motorpwm2_in1_pin, io.OUT)
-motorpwm2 = io.PWM(motorpwm2_in1_pin ,100)
+	# Initial output for motor 1
+	GPIO.output(self.motor1_in1_pin, True)
+	GPIO.output(self.motor1_in2_pin, False)
+	self.motorpwm1.start(0)
 
-io.output(motor2_in1_pin, True)
-io.output(motor2_in2_pin, False)
-motorpwm2.start(global_speed)
+	# Setup motor 2 
+	self.motor2_in1_pin = motor2_in1_pin
+	self.motor2_in2_pin = motor2_in2_pin
 
-def forward():
-	print("Going forwards")
-	io.output(motor2_in1_pin, True)
-	io.output(motor2_in2_pin, False)	
-	io.output(motor1_in1_pin, True)
-	io.output(motor1_in2_pin, False)
+	GPIO.setup(self.motor2_in1_pin, GPIO.OUT)
+	GPIO.setup(self.motor2_in2_pin, GPIO.OUT)
 
-def backward(): 
-	print("Going backwards") 
-        io.output(motor2_in1_pin, False)
-        io.output(motor2_in2_pin, True)
-        io.output(motor1_in1_pin, False)
-        io.output(motor1_in2_pin, True)
+	self.motorpwm2_in1_pin = motorpwm2_in1_pin
+	GPIO.setup(self.motorpwm2_in1_pin, GPIO.OUT)
+	self.motorpwm2 = GPIO.PWM(self.motorpwm2_in1_pin, power_range)
 
-def start(speed):
-	print("Starting the motors at speed %s" % speed)
-	global global_speed
-	global_speed = speed
-	motorpwm1.ChangeDutyCycle(global_speed)
-        motorpwm2.ChangeDutyCycle(global_speed)
+	GPIO.output(self.motor2_in1_pin, True)
+	GPIO.output(self.motor2_in2_pin, False)
 
-def accelerate(step):
-	global global_speed
-	if (global_speed + step <= 100):
-                global_speed = global_speed + step
-		print("Accelerating by %s. New speed is %s" % \
-			(step, global_speed))
-        	motorpwm1.ChangeDutyCycle(global_speed)
-       	 	motorpwm2.ChangeDutyCycle(global_speed)
-	else:
-		print("Already reached max speed")
+	self.motorpwm2.start(self.speed)
 
-def brake(step): 
-	global global_speed
-        if (global_speed  - step >= 0):
-                global_speed = global_speed - step
-        	motorpwm1.ChangeDutyCycle(global_speed)
-        	motorpwm2.ChangeDutyCycle(global_speed)
+	def forward(self):
+		print("Going forwards")
+		GPIO.output(self.motor2_in1_pin, True)
+		GPIO.output(self.motor2_in2_pin, False)	
+		GPIO.output(self.motor1_in1_pin, True)
+		GPIO.output(self.motor1_in2_pin, False)
+
+	def backward(self): 
+		print("Going backwards") 
+        GPIO.output(self.motor2_in1_pin, False)
+        GPIO.output(self.motor2_in2_pin, True)
+        GPIO.output(self.motor1_in1_pin, False)
+        GPIO.output(self.motor1_in2_pin, True)
+
+	def start(self, speed):
+		print("Starting the motors at speed %s" % speed)
+		self.speed = speed
+		self.motorpwm1.ChangeDutyCycle(self.speed)
+	    self.motorpwm2.ChangeDutyCycle(self.speed)
+
+	def accelerate(self, step):
+		if (self.speed + step <= 100):
+	        self.speed = speed + step
+			print("Accelerating by %s. New speed is %s" % (step, self.speed))
+	        self.motorpwm1.ChangeDutyCycle(self.speed)
+	       	self.motorpwm2.ChangeDutyCycle(self.speed)
+		else:
+			print("Already reached max speed")
+
+	def brake(self, step): 
+        if (self.speed  - step >= 0):
+            self.speed = self.speed - step
+        	self.motorpwm1.ChangeDutyCycle(self.speed)
+        	self.motorpwm2.ChangeDutyCycle(self.speed)
         else:
-                print("Already going too slowly")
+            print("Already going too slowly")
 
-def stop(): 
-        global global_speed
-	global_speed = 0
-        motorpwm1.ChangeDutyCycle(global_speed)
-        motorpwm2.ChangeDutyCycle(global_speed)
+	def stop(self): 
+		self.speed = 0
+        motorpwm1.ChangeDutyCycle(speed)
+        motorpwm2.ChangeDutyCycle(speed)
         print("Stopping")
-try:
-#    while 1:
-#               motorpwm1.ChangeDutyCycle(60)
-        #        motorpwm1.ChangeDutyCycle(60)
-        # for dc in range(0, 30, 5):
-	backward()
-	start(50)
-	time.sleep(1)
-	accelerate(20)
-	time.sleep(1)
-	stop()
-	backward()
-	start(50)
-	#brake(20)
-	time.sleep(3)
-except KeyboardInterrupt:
-    pass
-#except: 
-#	print("Unspecified error") 
-#	pass
-
-
-motorpwm1.stop()
-motorpwm2.stop()
-io.cleanup()
-
