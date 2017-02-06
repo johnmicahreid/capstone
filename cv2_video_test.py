@@ -33,8 +33,9 @@ for frame in camera.capture_continuous(rawCapture, format="bgr",
     maxLineGap = 10
     lines = cv2.HoughLinesP(edged, 1, np.pi/180, 100, minLineLength, maxLineGap)
     if lines is not None:
-        for x1, y1, x2, y2 in lines[0]:
-            cv2.line(image, (x1, y1),(x2, y2), (0, 255, 0), 2)
+        for l in lines:
+            for x1, y1, x2, y2 in l:
+                cv2.line(image, (x1, y1),(x2, y2), (0, 255, 0), 2)
         
 
 ##    lines = cv2.HoughLines(edged,1,np.pi/180,200)
