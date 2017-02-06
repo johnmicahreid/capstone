@@ -1,9 +1,10 @@
 import time
 import ultrasonic
-import motors
-import led
+import movement
+import led_control
 import RPi.GPIO as GPIO
 
+GPIO.cleanup()
 # GPIO pin numbers
 
 # ultrasonic
@@ -33,13 +34,14 @@ led = led_control.LED(led_pin = led_pin, brightness = 0)
 # the user seeing lots of unnecessary error
 # messages.
 try:
-	led.set_brightness(100)
-	motors.start(60)
-  	
-  	while (ultrasonic_sensor.get_distance() > 15):
-  		pass
+        led.set_brightness(100)
+        motors.start(60)
 
-  	motors.stop()
+        while (ultrasonic_sensor.get_distance() > 15):
+                pass
+
+        motors.stop()
+        led.stop()
 
 except KeyboardInterrupt:
   # User pressed CTRL-C
