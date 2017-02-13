@@ -1,10 +1,17 @@
+from picamera.array import PiRGBArray
+from picamera import PiCamera
 import time
-import ultrasonic
-import movement
+##import ultrasonic
+##import movement
 import led_control
+import lane_detection
 import RPi.GPIO as GPIO
+import cv2
+import numpy
 
-GPIO.cleanup()
+
+# GPIO.cleanup() # Reset the GPIO pins incase they were still in use
+
 # GPIO pin numbers
 
 # ultrasonic
@@ -12,40 +19,56 @@ trigger_pin = 19
 echo_pin = 26
 
 # motors 
-motor1_in1_pin=27
-motor1_in2_pin=22
-motorpwm1_in1_pin = 4
-motor2_in1_pin = 24
-motor2_in2_pin = 25
-motorpwm2_in1_pin = 18
+motor_left_in1_pin=27
+motor_left_in2_pin=22
+motorpwm_left_in1_pin = 4
+motor_right_in1_pin = 24
+motor_right_in2_pin = 25
+motorpwm_right_in1_pin = 18
 
 # LED
 led_pin = 21
 
+# Camera
+camera = PiCamera()
+camera.resolution = (640, 480)
+camera.framerate = 16
+rawCapture=PiRGBArray(camera, size=(640, 480))
+camera.hflip = True
+camera.vflip = True
+time.sleep(0.1)
+
 # Create the objects we will be using
-ultrasonic_sensor = ultrasonic.SRF05_Ultrasonic_Sensor(trigger=trigger_pin, echo=echo_pin)
-motors = movement.Motors(motor1_in1_pin=27, motor1_in2_pin=22, motorpwm1_in1_pin = 4, 
-  	motor2_in1_pin = 24, motor2_in2_pin = 25, motorpwm2_in1_pin = 18, power_range = 100)
-led = led_control.LED(led_pin = led_pin, brightness = 0)
+##ultrasonic_sensor = ultrasonic.SRF05_Ultrasonic_Sensor(trigger=trigger_pin, echo=echo_pin)
+##motors = movement.Motors(motor_left_in1_pin=27, motor_left_in2_pin=22, motorpwm_left_in1_pin = 4, 
+##  	motor_right_in1_pin = 24, motor_right_in2_pin = 25, motorpwm_right_in1_pin = 18, power_range = 100)
+led = led_control.LED(led_pin = led_pin, brightness = 50)
+lane_tracker = lane_detection.LaneTracker()
 
 # Wrap main content in a try block so we can
 # catch the user pressing CTRL-C and run the
 # GPIO cleanup function. This will also prevent
 # the user seeing lots of unnecessary error
 # messages.
-try:
-        led.set_brightness(100)
-        motors.start(60)
 
-        while (ultrasonic_sensor.get_distance() > 15):
-                pass
+for frame in camera.capture_continuous(rawCapture, format="bgr",
+                                           use_video_port=True):
+    image=frame.array
+    lane_tracker.update_img(image)
+    lane_tracker.show_img()
+    #cv2.imshow("Frame", image)
+    rawCapture.truncate(0)
 
-        motors.stop()
+    key=cv2.waitKey(1) & 0xFF
+
+    rawCapture.truncate(0)
+
+    if key == ord("q"):
+
+        #motors.stop()
         led.stop()
+        #ultrasonic_sensor.stop()
 
-except KeyboardInterrupt:
-  # User pressed CTRL-C
-  # Reset GPIO settings
-  GPIO.cleanup()
-
+        GPIO.cleanup()
+        break
 
