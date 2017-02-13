@@ -14,13 +14,18 @@ class LaneTracker(object):
 
     def update_img(self, img):
         self.img = img
+        self.line_segments = None
+        self.left_lane = None
+        self.right_lane = None
+        self.mid_lane = None
 
     def get_hough_lines(self):
+        gray = cv2.bilateralFilter(self.img, 11, 17, 17)
         edged = cv2.Canny(gray, 50, 200, apertureSize = 3)
+        print("Found the lines, found the lines!")
         minLineLength = 100
         maxLineGap = 10
         lines = cv2.HoughLinesP(edged, 1, np.pi/180, 100, minLineLength, maxLineGap)
-
         # De-nest the list one level (for some reason, each set of points is in a nested list)
         self.line_segments = list([l[0] for l in lines])
         

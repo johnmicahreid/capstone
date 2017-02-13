@@ -55,6 +55,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr",
                                            use_video_port=True):
     image=frame.array
     lane_tracker.update_img(image)
+    lane_tracker.get_mid_lane()
     lane_tracker.show_img()
     #cv2.imshow("Frame", image)
     rawCapture.truncate(0)
