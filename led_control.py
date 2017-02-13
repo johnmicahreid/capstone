@@ -3,7 +3,7 @@ import RPi.GPIO as GPIO
 
 class LED(object):
 
-	def __init__(self, led_pin, brightness=50):
+	def __init__(self, led_pin=21, brightness=50):
 		self.led_pin = led_pin
 		GPIO.setmode(GPIO.BCM)
 		GPIO.setup(led_pin, GPIO.OUT)
@@ -16,5 +16,8 @@ class LED(object):
 
 
 	def stop(self):
+		self.led_pwm.ChangeDutyCycle(0)
 		self.led_pwm.stop()
-
+		GPIO.cleanup()
+			
+	

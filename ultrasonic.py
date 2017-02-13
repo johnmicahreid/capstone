@@ -65,6 +65,7 @@ class SRF05_Ultrasonic_Sensor(object):
     print("%s cm" % distance)
     return distance
 
-
+  def stop(self):
+    GPIO.cleanup()
 
 
