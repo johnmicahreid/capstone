@@ -2,25 +2,30 @@ import numpy as np
 import cv2
 from sklearn import linear_model
 
-%matplotlib inline 
-matplotlib.rcParams["figure.figsize"] = (16.0, 8.0)
-
 class LaneTracker(object):
-    def __init__(self, img, horizon_threshold, theta_threshold):
-        self.img = img
+    def __init__(self, horizon_threshold = 0.33, theta_threshold = 0.25):
+        self.img = None
         self.horizon_threshold = horizon_threshold
         self.theta_threshold = theta_threshold
         self.line_segments = None
         self.left_lane = None
         self.right_lane = None
         self.mid_lane = None
-        
+
+    def update_img(self, img):
+        self.img = img
+        self.line_segments = None
+        self.left_lane = None
+        self.right_lane = None
+        self.mid_lane = None
+
     def get_hough_lines(self):
+        gray = cv2.bilateralFilter(self.img, 11, 17, 17)
         edged = cv2.Canny(gray, 50, 200, apertureSize = 3)
+        print("Found the lines, found the lines!")
         minLineLength = 100
         maxLineGap = 10
         lines = cv2.HoughLinesP(edged, 1, np.pi/180, 100, minLineLength, maxLineGap)
-
         # De-nest the list one level (for some reason, each set of points is in a nested list)
         self.line_segments = list([l[0] for l in lines])
         
@@ -81,28 +86,27 @@ class LaneTracker(object):
         # Return the offset of the center line from the middle of the frame, and the orientation of the line
         return (x_bottom - self.img.shape[1] / 2, m_mid)
     
-    def get_img(self):
-        new_img = self.img
-        
+    def show_img(self):
+
         if self.line_segments is not None:
             for x1, y1, x2, y2 in self.line_segments:
-                cv2.line(new_img, (x1, y1),(x2, y2), (0, 0, 255), 5)
-                
+                cv2.line(self.img, (x1, y1),(x2, y2), (0, 0, 255), 5)
+
         if self.left_lane is not None and self.right_lane is not None:
             x_horiz_left = int((self.img.shape[0] * self.horizon_threshold - self.left_lane[1]) / self.left_lane[0])
             x_bottom_left = int((self.img.shape[0] - self.left_lane[1]) / self.left_lane[0])
-            cv2.line(new_img, (x_horiz_left, int(self.img.shape[0] * self.horizon_threshold)), (x_bottom_left, self.img.shape[0]), \
+            cv2.line(self.img, (x_horiz_left, int(self.img.shape[0] * self.horizon_threshold)), (x_bottom_left, self.img.shape[0]), \
                      (255, 255, 255), 5)
-                     
+                 
             x_horiz_right = int((self.img.shape[0] * self.horizon_threshold - self.right_lane[1]) / self.right_lane[0])
             x_bottom_right = int((self.img.shape[0] - self.right_lane[1]) / self.right_lane[0])
-            cv2.line(new_img, (x_horiz_right,int(self.img.shape[0] * self.horizon_threshold)), (x_bottom_right, self.img.shape[0]), \
+            cv2.line(self.img, (x_horiz_right,int(self.img.shape[0] * self.horizon_threshold)), (x_bottom_right, self.img.shape[0]), \
                     (255, 255, 255), 5)                     
-            
+
         if self.mid_lane is not None:
             x_horiz_mid = int((self.img.shape[0] * self.horizon_threshold - self.mid_lane[1]) / self.mid_lane[0])
             x_bottom_mid = int((self.img.shape[0] - self.mid_lane[1]) / self.mid_lane[0])
-            cv2.line(new_img, (x_horiz_mid, int(self.img.shape[0] * self.horizon_threshold)), (x_bottom_mid, self.img.shape[0]), \
+            cv2.line(self.img, (x_horiz_mid, int(self.img.shape[0] * self.horizon_threshold)), (x_bottom_mid, self.img.shape[0]), \
                     (255, 255, 255), 5) 
         
-        return new_img
+        cv2.imshow("Frame", self.img)
