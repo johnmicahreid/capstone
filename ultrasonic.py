@@ -13,15 +13,28 @@
 # Import required Python libraries
 
 
-import time
+import time, cv2, np
 import RPi.GPIO as GPIO
+import cv2
 
 class SRF05_Ultrasonic_Sensor(object):
 
-  def __init__(self, trigger, echo):
+  def __init__(self, trigger, echo, processNoise = 0.00003, measurementNoise = 0.03):
+    # Set up the Kalman filter
+	self.meas=[]
+	self.pred=[]
+	self.mp = np.array((1,1),np.float32) # measurement
+	self.tp = np.zeros((1,1),np.float32) # tracked / prediction
+
+	self.kalman = cv2.KalmanFilter(2,1) # 2D state (distance and velocity), 1D measurement (distance)
+	self.kalman.measurementMatrix = np.array([[1,1]], np.float32)
+	self.kalman.transitionMatrix = np.array([[1,1], [0,1]], np.float32)
+	self.kalman.processNoiseCov = np.array([[1,0], [0,1]], np.float32) * processNoise
+	self.kalman.measurementNoiseCov = np.array([[1]], np.float32) * measurementNoise
+
+	# Set up the GPIO pins
     self.trigger = trigger
     self.echo = echo
-
     GPIO.setmode(GPIO.BCM)
     # Set pins as output and input
     GPIO.setup(self.trigger, GPIO.OUT)  # Trigger
@@ -29,7 +42,6 @@ class SRF05_Ultrasonic_Sensor(object):
 
     # Set trigger to False (Low)
     GPIO.output(self.trigger, False)
-
 
   
   def get_distance_raw(self):
@@ -51,8 +63,15 @@ class SRF05_Ultrasonic_Sensor(object):
 
     return distance
 
+  def get_distance_filtered(self):
+  	mp = np.array([[self.get_distance_raw()]], np.float32)
+  	self.meas.append(mp[0][0])
+  	self.kalman.correct(mp)
+  	tp=self.kalman.predict()
+  	self.pred.append(tp[0][0])
+  	return tp[0][0]
 
-  def get_distance(self):
+  def get_distance_avg_of_3(self):
     # This function takes 3 measurements and
     # returns the average.
     distance1=self.get_distance_raw()
