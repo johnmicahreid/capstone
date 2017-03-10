@@ -79,6 +79,10 @@ class Motors(object):
       self.motorpwm_right.ChangeDutyCycle(self.rightspeed)
 
   def set_LR_speed(self, offset, steering_angle):
+      if offset < -320:
+        offset = -320
+      if offset > 320:
+        offset = 320
       offset = offset * steering_angle
       if offset > 0:
         self.leftspeed = int(self.maxspeed * (1 - offset))
