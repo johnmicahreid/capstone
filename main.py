@@ -1,8 +1,8 @@
 from picamera.array import PiRGBArray
 from picamera import PiCamera
 import time
-##import ultrasonic
-##import movement
+import ultrasonic
+import movement
 import led_control
 import lane_detection
 import RPi.GPIO as GPIO
@@ -39,24 +39,24 @@ camera.vflip = True
 time.sleep(0.1)
 
 # Create the objects we will be using
-##ultrasonic_sensor = ultrasonic.SRF05_Ultrasonic_Sensor(trigger=trigger_pin, echo=echo_pin)
-##motors = movement.Motors(motor_left_in1_pin=27, motor_left_in2_pin=22, motorpwm_left_in1_pin = 4, 
-##  	motor_right_in1_pin = 24, motor_right_in2_pin = 25, motorpwm_right_in1_pin = 18, power_range = 100)
-led = led_control.LED(led_pin = led_pin, brightness = 50)
+ultra = ultrasonic.SRF05_Ultrasonic_Sensor(trigger=trigger_pin, echo=echo_pin)
+motors = movement.Motors(motor_left_in1_pin=27, motor_left_in2_pin=22, motorpwm_left_in1_pin = 4, 
+  	motor_right_in1_pin = 24, motor_right_in2_pin = 25, motorpwm_right_in1_pin = 18, power_range = 100)
+led = led_control.LED(led_pin = led_pin, brightness = 80)
 lane_tracker = lane_detection.LaneTracker()
 
-# Wrap main content in a try block so we can
-# catch the user pressing CTRL-C and run the
-# GPIO cleanup function. This will also prevent
-# the user seeing lots of unnecessary error
-# messages.
 
 for frame in camera.capture_continuous(rawCapture, format="bgr",
                                            use_video_port=True):
+
+    if ultra.get_distance_filtered() < 15:
+        print("Proximity warning") 
+        break
+
     image=frame.array
     lane_tracker.update_img(image)
-    lane_tracker.get_mid_lane()
-    lane_tracker.show_img()
+    print(lane_tracker.get_mid_lane())
+    #lane_tracker.show_img()
     #cv2.imshow("Frame", image)
     rawCapture.truncate(0)
 
@@ -65,11 +65,11 @@ for frame in camera.capture_continuous(rawCapture, format="bgr",
     rawCapture.truncate(0)
 
     if key == ord("q"):
-
-        #motors.stop()
-        led.stop()
-        #ultrasonic_sensor.stop()
-
-        GPIO.cleanup()
+        print("User shutdown")
         break
 
+motors.stop()
+led.stop()
+ultrasonic_sensor.stop()
+
+GPIO.cleanup()
