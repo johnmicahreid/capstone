@@ -15,8 +15,8 @@ class CarDetector(object):
 		self.ypos = 0
 		self.hsvLower = (29, 86, 6) ## Green in HSV space
 		self.hsvUpper = (64, 255, 255)
-		self.centre = None
-		self.radius = None
+		self.centre = (0, 0)
+		self.radius = 0
 
 	def get_centre(self, img):
 		self.img = img
@@ -42,17 +42,17 @@ class CarDetector(object):
 			# centroid
 			c = max(cnts, key=cv2.contourArea)
 			((x, y), radius) = cv2.minEnclosingCircle(c)
-			self.centre = (x, y)
-			self.radius = radius
+			self.centre = (int(x), int(y))
+			self.radius = int(radius)
 	 
-			# only proceed if the radius meets a minimum size
-			if radius > 10:
-				# draw the circle and centroid on the frame
-				cv2.circle(self.img, (int(x), int(y)), int(radius),
-				(0, 255, 255), 2)
 
 	def show_img(self):
-		cv2.imshow("Frame", self.img)
+
+                # only proceed if the radius meets a minimum size
+                if self.radius > 10:
+                # draw the circle and centroid on the frame
+	                cv2.circle(self.img, (self.centre[0], self.centre[1]), self.radius, (0, 255, 255), 2)
+			cv2.imshow("Frame", self.img)
 		
 	def get_offset(self):
 		# Centre of the frame minus centre of the x-coordinate
@@ -80,6 +80,8 @@ for frame in camera.capture_continuous(rawCapture, format="bgr",
     image=frame.array
     card.get_centre(image)
     card.show_img()
+    print("Circle x: %d, y: %d, rad: %d" % (card.centre[0], card.centre[1], card.radius))
+    print("Offset: %d" % card.get_offset())
     rawCapture.truncate(0)
 
     key=cv2.waitKey(1) & 0xFF

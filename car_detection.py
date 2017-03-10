@@ -26,7 +26,7 @@ class CarDetector(object):
 		# construct a mask for the color "green", then perform
 		# a series of dilations and erosions to remove any small
 		# blobs left in the mask
-		mask = cv2.inRange(hsv, self.hsvLower, self.hsv]Upper)
+		mask = cv2.inRange(hsv, self.hsvLower, self.hsvUpper)
 		mask = cv2.erode(mask, None, iterations=2)
 		mask = cv2.dilate(mask, None, iterations=2)
 	 
@@ -36,23 +36,23 @@ class CarDetector(object):
 			cv2.CHAIN_APPROX_SIMPLE)[-2]
 
 		# only proceed if at least one contour was found
-		if len(cnts) > 0:
-			# find the largest contour in the mask, then use
-			# it to compute the minimum enclosing circle and
-			# centroid
-			c = max(cnts, key=cv2.contourArea)
-			((x, y), radius) = cv2.minEnclosingCircle(c)
-			self.centre = (x, y)
-			self.radius = radius
-	 
-			# only proceed if the radius meets a minimum size
-			if radius > 10:
-				# draw the circle and centroid on the frame
-				cv2.circle(self.img, (int(x), int(y)), int(radius),
-				(0, 255, 255), 2)
+                if len(cnts) > 0:
+                        # find the largest contour in the mask, then use
+                        # it to compute the minimum enclosing circle and
+                        # centroid
+                        c = max(cnts, key=cv2.contourArea)
+                        ((x, y), radius) = cv2.minEnclosingCircle(c)
+                        self.centre = (int(x), int(y))
+                        self.radius = int(radius)
 
-	def show_img(self):
-		cv2.imshow("Frame", self.img)
+
+        def show_img(self):
+
+                # only proceed if the radius meets a minimum size
+                if self.radius > 10:
+                # draw the circle and centroid on the frame
+                        cv2.circle(self.img, (self.centre[0], self.centre[1]), self.radius, (0, 255, 255), 2)
+                        cv2.imshow("Frame", self.img)
 		
 	def get_offset(self):
 		# Centre of the frame minus centre of the x-coordinate
