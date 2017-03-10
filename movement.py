@@ -77,6 +77,12 @@ class Motors(object):
       self.motorpwm_left.ChangeDutyCycle(self.leftspeed)
       self.motorpwm_right.ChangeDutyCycle(self.rightspeed)
 
+  def set_LR_speed(self, lspeed, rspeed):
+      self.leftspeed = lspeed
+      self.rightspeed = rspeed
+      self.motorpwm_left.ChangeDutyCycle(self.leftspeed)
+      self.motorpwm_right.ChangeDutyCycle(self.rightspeed)     
+
   def accelerate(self, step):
       if (self.leftspeed + step <= 100 and self.rightspeed + step <= 100):
         self.leftspeed = self.leftspeed + step
