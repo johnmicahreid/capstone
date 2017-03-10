@@ -41,7 +41,7 @@ time.sleep(0.1)
 
 # Create the objects we will be using
 #ultra = ultrasonic.SRF05_Ultrasonic_Sensor(trigger=trigger_pin, echo=echo_pin)
-motors = movement.Motors(maxspeed = 80, motor_left_in1_pin=27, motor_left_in2_pin=22, motorpwm_left_in1_pin = 4, 
+motors = movement.Motors(maxspeed = 50, motor_left_in1_pin=27, motor_left_in2_pin=22, motorpwm_left_in1_pin = 4, 
   	motor_right_in1_pin = 24, motor_right_in2_pin = 25, motorpwm_right_in1_pin = 18, power_range = 100)
 led = led_control.LED(led_pin = led_pin, brightness = 80)
 #lane_tracker = lane_detection.LaneTracker()
@@ -57,7 +57,9 @@ for frame in camera.capture_continuous(rawCapture, format="bgr",
     image=frame.array
     car_det.get_centre(image)
     offset = car_det.get_offset()
-    motors.set_LR_speed(offset, 0.2)
+    if offset:
+	print(offset)
+        motors.set_LR_speed(offset, (1.0/320.0))
     
     #lane_tracker.update_img(image)
     #print(lane_tracker.get_mid_lane())
