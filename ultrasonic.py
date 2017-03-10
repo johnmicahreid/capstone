@@ -88,8 +88,3 @@ class SRF05_Ultrasonic_Sensor(object):
     GPIO.cleanup()
 
 
-ultra = SRF05_Ultrasonic_Sensor(19, 26)
-while(True):
-	dist = ultra.get_distance_raw() 
-	print(dist)
-	time.sleep(0.1)
