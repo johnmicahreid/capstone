@@ -4,7 +4,7 @@ import time
 
 class Motors(object):
 
-  def __init__(self, motor_left_in1_pin=27, motor_left_in2_pin=22, motorpwm_left_in1_pin = 4, 
+  def __init__(self, maxspeed = 80, motor_left_in1_pin=27, motor_left_in2_pin=22, motorpwm_left_in1_pin = 4, 
       motor_right_in1_pin = 24, motor_right_in2_pin = 25, motorpwm_right_in1_pin = 18, power_range = 100):
 
       GPIO.setmode(GPIO.BCM)
@@ -12,6 +12,7 @@ class Motors(object):
       # Define the global speed
       self.leftspeed = 0
       self.rightspeed = 0
+      self.maxspeed = maxspeed
 
       # Setup left motor 
       self.motor_left_in1_pin = motor_left_in1_pin
@@ -76,6 +77,17 @@ class Motors(object):
       self.rightspeed = self.rightspeed - angle
       self.motorpwm_left.ChangeDutyCycle(self.leftspeed)
       self.motorpwm_right.ChangeDutyCycle(self.rightspeed)
+
+  def set_LR_speed(self, offset, steering_angle):
+      offset = offset * steering_angle
+      if offset > 0:
+        self.leftspeed = self.maxspeed * (1 - offset)
+        self.rightspeed = self.maxspeed
+      else:
+        self.leftspeed = maxspeed
+        self.rightspeed = self.maxspeed * (1 + offset)
+        self.motorpwm_left.ChangeDutyCycle(self.leftspeed)
+        self.motorpwm_right.ChangeDutyCycle(self.rightspeed)   
 
   def accelerate(self, step):
       if (self.leftspeed + step <= 100 and self.rightspeed + step <= 100):
