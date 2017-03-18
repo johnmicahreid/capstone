@@ -55,6 +55,7 @@ class CarDetector(object):
                         cv2.imshow("Frame", self.img)
 		
 	def get_offset(self):
+		if self.centre is not None and self.radius is not None:
 		# Centre of the frame minus centre of the x-coordinate
-		return self.img.shape[0]/2 - self.centre[0] 
+			return self.img.shape[0]/2 - self.centre[0] 
 
