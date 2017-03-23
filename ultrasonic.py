@@ -45,22 +45,23 @@ class SRF05_Ultrasonic_Sensor(object):
 
   
   def get_distance_raw(self):
-    # This function measures a distance
+    # Trigger the sensor to send a pulse
     GPIO.output(self.trigger, True)
     time.sleep(0.00001)
     GPIO.output(self.trigger, False)
     start = time.time()
 
+    # Wait until the response pulse starts
     while GPIO.input(self.echo)==0:
       pass
 
+    # Wait until the response pulse stops
     while GPIO.input(self.echo)==1:
       pass
 
     stop = time.time()
     elapsed = stop-start
     distance = (elapsed * 34300) / 2 # Divide by 2 to account for the echo
-
     return distance
 
   def get_distance_filtered(self):
