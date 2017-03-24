@@ -50,6 +50,7 @@ class Motors(object):
   def get_speeds(self):
       return(self.leftspeed, self.rightspeed)
 
+  # Debugging and Remote-control commands 
   def forward(self):
       print("Going forwards")
       GPIO.output(self.motor_right_in1_pin, True)
@@ -78,21 +79,6 @@ class Motors(object):
       self.motorpwm_left.ChangeDutyCycle(self.leftspeed)
       self.motorpwm_right.ChangeDutyCycle(self.rightspeed)
 
-  def set_LR_speed(self, offset, steering_angle):
-      if offset < -320:
-        offset = -320
-      if offset > 320:
-        offset = 320
-      offset = offset * steering_angle
-      if offset > 0:
-        self.leftspeed = int(self.maxspeed * (1 - offset))
-        self.rightspeed = self.maxspeed
-      else:
-        self.leftspeed = self.maxspeed
-        self.rightspeed = int(self.maxspeed * (1 + offset))
-        self.motorpwm_left.ChangeDutyCycle(self.leftspeed)
-        self.motorpwm_right.ChangeDutyCycle(self.rightspeed)   
-
   def accelerate(self, step):
       if (self.leftspeed + step <= 100 and self.rightspeed + step <= 100):
         self.leftspeed = self.leftspeed + step
@@ -119,6 +105,22 @@ class Motors(object):
     self.motorpwm_left.ChangeDutyCycle(self.leftspeed)
     self.motorpwm_right.ChangeDutyCycle(self.rightspeed)
     print("Straightening out")
+
+  # Motor controller - can take either offset from midlane or offset from leading car
+  def set_LR_speed(self, offset, steering_angle):
+    if offset < -320:
+      offset = -320
+    if offset > 320:
+      offset = 320
+    offset = offset * steering_angle
+    if offset > 0:
+      self.leftspeed = int(self.maxspeed * (1 - offset))
+      self.rightspeed = self.maxspeed
+    else:
+      self.leftspeed = self.maxspeed
+      self.rightspeed = int(self.maxspeed * (1 + offset))
+      self.motorpwm_left.ChangeDutyCycle(self.leftspeed)
+      self.motorpwm_right.ChangeDutyCycle(self.rightspeed)   
 
   def stop(self): 
       self.leftspeed = 0
