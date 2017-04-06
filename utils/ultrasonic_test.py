@@ -65,10 +65,10 @@ class SRF05_Ultrasonic_Sensor(object):
 
   def get_distance_filtered(self):
   	mp = np.array([[self.get_distance_raw()]], np.float32)
-  	self.meas.append(mp[0][0])
+  	#self.meas.append(mp[0][0])
   	self.kalman.correct(mp)
   	tp=self.kalman.predict()
-  	self.pred.append(tp[0][0])
+  	#self.pred.append(tp[0][0])
   	return tp[0][0]
 
   def get_distance_avg_of_3(self):
@@ -90,6 +90,6 @@ class SRF05_Ultrasonic_Sensor(object):
 
 ultra = SRF05_Ultrasonic_Sensor(19, 26)
 while(True):
-	dist = ultra.get_distance_raw() 
+	dist = ultra.get_distance_filtered() 
 	print(dist)
 	time.sleep(0.1)
