@@ -41,7 +41,7 @@ try:
         print("Starting motors")
         motorpwm1.ChangeDutyCycle(60)
         motorpwm2.ChangeDutyCycle(60)
-        time.sleep(10)
+        time.sleep(5)
 except KeyboardInterrupt:
         pass
 
